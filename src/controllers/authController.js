@@ -133,12 +133,12 @@ const googleCallback = async (req, res) => {
         );
 
         // Redirigir a la página principal con los datos necesarios
-        res.redirect(`http://localhost:4200?token=${token}&user=${JSON.stringify({
+        res.redirect(`http://localhost:4200/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
             id: userId,
             email: userInfo.email,
             name: userInfo.name,
             role: 'jugador'
-        })}`);
+        }))}`);
     } catch (error) {
         console.error('Error en autenticación:', error);
         res.status(500).send('Error en autenticación');
