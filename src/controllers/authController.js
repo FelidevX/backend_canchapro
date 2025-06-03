@@ -113,12 +113,15 @@ const googleCallback = async (req, res) => {
         const [existingUser] = await pool.query('SELECT * FROM usuarios WHERE correo = ?', [userInfo.email]);
         
         let userId;
+        let userRole;
         if(existingUser.length === 0){
             const [result] = await pool.query('INSERT INTO usuarios (nombre, apellido, correo, rol) VALUES (?, ?, ?, ?)',
             [userInfo.name, userInfo.surname, userInfo.email, 'jugador']);
             userId = result.insertId;
+            userRole = 'jugador';
         } else {
             userId = existingUser[0].id;
+            userRole = existingUser[0].rol;
         }
 
         // Generar un token JWT para mantener consistencia con el login normal
@@ -126,7 +129,7 @@ const googleCallback = async (req, res) => {
             { 
                 id: userId, 
                 email: userInfo.email,
-                role: 'jugador'
+                role: userRole
             },
             JWT_SECRET,
             { expiresIn: '24h' }
@@ -137,7 +140,7 @@ const googleCallback = async (req, res) => {
             id: userId,
             email: userInfo.email,
             name: userInfo.name,
-            role: 'jugador'
+            role: userRole
         }))}`);
     } catch (error) {
         console.error('Error en autenticación:', error);
