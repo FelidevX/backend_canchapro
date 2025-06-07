@@ -2,13 +2,15 @@ const pool = require('../config/db');
 
 const crearCancha = async (req, res) => {
     try {
-        const { nombre, direccion, precio, descripcion, id_dueno } = req.body;
+        const { nombre, direccion, precio, descripcion, rating, id_dueno } = req.body;
         if (!nombre || !direccion || !precio || !descripcion || !id_dueno) {
             return res.status(400).json({ message: 'Faltan campos requeridos' });
         }
 
+        const ratingValue = 1.0;
+
         const [result] = await pool.query(
-            'INSERT INTO canchas (nombre, direccion, precio, descripcion, id_dueno) VALUES (?, ?, ?, ?, ?)', [nombre, direccion, precio, descripcion, id_dueno]
+            'INSERT INTO canchas (nombre, direccion, precio, descripcion, rating, id_dueno) VALUES (?, ?, ?, ?, ?, ?)', [nombre, direccion, precio, descripcion, ratingValue, id_dueno]
         );
 
         res.status(201).json({
@@ -17,6 +19,7 @@ const crearCancha = async (req, res) => {
             direccion,
             precio,
             descripcion,
+            rating: ratingValue,
             id_dueno
         });
     } catch (error) {
@@ -67,9 +70,23 @@ const actualizarCancha = async (req, res) => {
     }
 }
 
+const eliminarCancha = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [result] = await pool.query('DELETE FROM canchas WHERE id = ?', [id]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Cancha no encontrada' });
+        }
+        res.json({ message: 'Cancha eliminada correctamente' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al eliminar cancha', error: error.message });
+    }
+}
+
 module.exports = { 
     crearCancha,
     obtenerCanchas,
     obtenerCanchaPorDueno,
-    actualizarCancha
+    actualizarCancha,
+    eliminarCancha
  };
