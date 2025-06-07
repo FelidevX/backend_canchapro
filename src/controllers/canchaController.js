@@ -25,4 +25,16 @@ const crearCancha = async (req, res) => {
     }
 };
 
-module.exports = { crearCancha };
+const obtenerCanchas = async (req, res) => {
+    try {
+        const [canchas] = await pool.query('SELECT * FROM canchas');
+        res.json(canchas);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener canchas', error: error.message });
+    }
+}
+
+module.exports = { 
+    crearCancha,
+    obtenerCanchas
+ };
