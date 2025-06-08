@@ -3,6 +3,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const canchaRoutes = require('./routes/cancha');
+const reservaRoutes = require('./routes/reserva');
 
 const app = express();
 
@@ -18,5 +19,6 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/canchas', canchaRoutes);
+app.use('/reservas', reservaRoutes);
 
 module.exports = app; 
