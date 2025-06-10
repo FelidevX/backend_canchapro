@@ -2,6 +2,7 @@
  * Controlador de autenticación que maneja el login, registro y autenticación con Google
  * Utiliza bcrypt para el hash de contraseñas y JWT para la generación de tokens
  */
+const { sendEmail } = require('../config/email'); // Agrega al inicio
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
@@ -70,11 +71,22 @@ const register = async (req, res) => {
         );
 
         res.status(201).json({ message: 'Usuario registrado exitosamente' });
+
+     const subject = '👋 ¡Bienvenido a CanchaPro!';
+     const html = `
+      <h2>Hola ${name},</h2>
+      <p>Tu cuenta ha sido creada exitosamente.</p>
+      <p>Ahora puedes reservar canchas y disfrutar de nuestros servicios.</p>
+      `;
+      await sendEmail(email, subject, html);
+
+    res.status(201).json({ message: 'Usuario registrado exitosamente' });
     } catch (error) {
         console.error('Error en registro:', error);
         res.status(500).json({ message: 'Error al registrar usuario' });
     }
-};
+ 
+  };
 
 /**
  * Inicia el proceso de autenticación con Google
@@ -147,6 +159,9 @@ const googleCallback = async (req, res) => {
         res.status(500).send('Error en autenticación');
     }
 };
+
+
+
 
 module.exports = {
     login,
