@@ -7,6 +7,17 @@ const crearReserva = async (req, res) => {
             return res.status(400).json({ message: 'Faltan campos requeridos' });
         }
 
+        const [canchaRows] = await pool.query('SELECT precio FROM canchas WHERE id = ?', [id_cancha]);
+        if (canchaRows.length === 0) {
+            return res.status(404).json({ message: 'Cancha no encontrada' });
+        }
+        const precio = parseFloat(canchaRows[0].precio);
+
+        const inicio = parseInt(hora_inicio.split(':')[0]);
+        const fin = parseInt(hora_fin.split(':')[0]);
+        const duracion = fin - inicio;
+        const valor_reserva = precio * duracion;
+
         const [reservasSolapadas] = await pool.query(
             `SELECT * FROM reservas WHERE id_cancha = ? AND fecha = ? AND (
             (hora_inicio < ? AND hora_fin > ?) OR (hora_inicio < ? AND hora_fin > ?) OR
@@ -33,7 +44,8 @@ const crearReserva = async (req, res) => {
             hora_fin,
             estado: estadoValue,
             id_usuario,
-            id_cancha
+            id_cancha,
+            valor_reserva
         });
     } catch (error) {
         console.error('Error al crear reserva:', error);
@@ -56,14 +68,7 @@ const obtenerReservasPorDueno = async (req, res) => {
 
         const [reservas] = await pool.query(
             `
-            SELECT r.id, r.fecha, r.hora_inicio, r.hora_fin, r.estado, r.id_usuario, r.id_cancha, c.nombre AS nombre_cancha, u.nombre AS nombre_cliente
-            FROM reservas r
-            JOIN canchas c ON r.id_cancha = c.id
-            JOIN usuarios u ON r.id_usuario = u.id
-            WHERE r.id_cancha IN (${idsCanchas.map(() => '?').join(',')})
-            `,
-            idsCanchas
-        );
+            SELECT r.id, r.fecha, r.hora_inicio, r.hora_fin, r.estado, r.id_usuario, r.id_cancha, c.nombre AS nombre_cancha, u.nombre AS nombre_cliente, c.precio * (HOUR(r.hora_fin) - HOUR(r.hora_inicio)) AS valor_reserva FROM reservas r JOIN canchas c ON r.id_cancha = c.id JOIN usuarios u ON r.id_usuario = u.id WHERE r.id_cancha IN (${idsCanchas.map(() => '?').join(',')})`, idsCanchas);
         res.json(reservas);
 
     } catch (error) {
