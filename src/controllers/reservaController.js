@@ -11,7 +11,7 @@ const crearReserva = async (req, res) => {
             `SELECT * FROM reservas WHERE id_cancha = ? AND fecha = ? AND (
             (hora_inicio < ? AND hora_fin > ?) OR (hora_inicio < ? AND hora_fin > ?) OR
             (hora_inicio >= ? AND hora_fin <= ?)
-            ) AND estado = 'ocupado'`,
+            ) AND estado = 'Confirmada'`,
             [id_cancha, fecha, hora_inicio, hora_inicio, hora_fin, hora_fin, hora_inicio, hora_fin]
         );
 
@@ -19,7 +19,7 @@ const crearReserva = async (req, res) => {
             return res.status(400).json({ message: 'La cancha ya está reservada en este horario' });
         }
 
-        const estadoValue = estado || 'ocupado';
+        const estadoValue = estado || 'Confirmada';
 
         const [result] = await pool.query(
             'INSERT INTO reservas (fecha, hora_inicio, hora_fin, estado, id_usuario, id_cancha) VALUES (?, ?, ?, ?, ?, ?)',
