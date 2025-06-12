@@ -77,7 +77,30 @@ const obtenerReservasPorDueno = async (req, res) => {
     }
 }
 
+const actualizarReserva = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { fecha, hora_inicio, hora_fin, estado, id_usuario, id_cancha } = req.body;
+
+        const [reservas] = await pool.query('SELECT * FROM reservas WHERE id = ?', [id]);
+        if (reservas.length === 0) {
+            return res.status(404).json({ message: 'Reserva no encontrada' });
+        }
+
+        await pool.query(
+            'UPDATE reservas SET fecha = ?, hora_inicio = ?, hora_fin = ?, estado = ?, id_usuario = ?, id_cancha = ? WHERE id = ?',
+            [fecha, hora_inicio, hora_fin, estado, id_usuario, id_cancha, id]
+        );
+
+        res.json({ message: 'Reserva actualizada correctamente' });
+    }catch (error) {
+        console.error('Error al actualizar reserva:', error);
+        res.status(500).json({ message: 'Error al actualizar reserva', error: error.message });
+    }
+}
+
 module.exports = {
     crearReserva,
-    obtenerReservasPorDueno
+    obtenerReservasPorDueno,
+    actualizarReserva
 };
