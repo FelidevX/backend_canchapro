@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { sendEmail } = require('../config/email');
 
 const crearReserva = async (req, res) => {
     try {
@@ -37,6 +38,23 @@ const crearReserva = async (req, res) => {
             [fecha, hora_inicio, hora_fin, estadoValue, id_usuario, id_cancha]
         );
 
+
+
+                const [user] = await pool.query('SELECT correo, nombre FROM usuarios WHERE id = ?', [id_usuario]);
+        const [cancha] = await pool.query('SELECT nombre FROM canchas WHERE id = ?', [id_cancha]);
+
+        // 3. Enviar correo de confirmación
+         const subject = '✅ Reserva confirmada en CanchaPro';
+        const html = `
+         <h2>¡Reserva exitosa!</h2>
+        <p><strong>Cancha:</strong> ${cancha[0].nombre}</p>
+         <p><strong>Fecha:</strong> ${fecha}</p>
+        <p><strong>Horario:</strong> ${hora_inicio} - ${hora_fin}</p>
+        <p>Gracias por usar CanchaPro. Presenta este correo al llegar.</p>
+        `;
+
+        await sendEmail(user[0].correo, subject, html);
+
         res.status(201).json({
             id: result.insertId,
             fecha,
@@ -47,6 +65,11 @@ const crearReserva = async (req, res) => {
             id_cancha,
             valor_reserva
         });
+
+
+
+
+
     } catch (error) {
         console.error('Error al crear reserva:', error);
         res.status(500).json({ message: 'Error al crear reserva', error: error.message });

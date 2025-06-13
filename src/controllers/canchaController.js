@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { sendEmail } = require('../config/email'); // Agrega al inicio
 
 const crearCancha = async (req, res) => {
     try {
@@ -13,6 +14,17 @@ const crearCancha = async (req, res) => {
             'INSERT INTO canchas (nombre, direccion, precio, descripcion, rating, id_dueno) VALUES (?, ?, ?, ?, ?, ?)', [nombre, direccion, precio, descripcion, ratingValue, id_dueno]
         );
 
+         // 2. Obtener email del dueño
+         const [dueno] = await pool.query('SELECT correo FROM usuarios WHERE id = ?', [id_dueno]);
+
+         // 3. Enviar correo al dueño
+         const subject = '🏟️ Nueva cancha registrada en CanchaPro';
+         const html = `
+           <h2>¡Felicidades!</h2>
+          <p>Tu cancha <strong>${nombre}</strong> ha sido registrada exitosamente.</p>
+              <p>Ahora los usuarios podrán reservarla.</p>
+         `;
+          await sendEmail(dueno[0].correo, subject, html);
         res.status(201).json({
             id: result.insertId,
             nombre,
