@@ -4,6 +4,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const canchaRoutes = require('./routes/cancha');
 const reservaRoutes = require('./routes/reserva');
+const equipoRoutes = require('./routes/equipo');
 
 const app = express();
 
@@ -20,5 +21,6 @@ app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/canchas', canchaRoutes);
 app.use('/reservas', reservaRoutes);
+app.use('/equipos', equipoRoutes);
 
 module.exports = app; 
