@@ -56,7 +56,7 @@ const login = async (req, res) => {
  * Verifica que el correo no esté registrado y crea un nuevo usuario
  */
 const register = async (req, res) => {
-    const { name, lastname, email, password } = req.body;
+    const { name, lastname, phone, email, password } = req.body;
     try {
         const [existingUser] = await pool.query('SELECT * FROM usuarios WHERE correo = ?', [email]);
         if (existingUser.length > 0) {
@@ -66,8 +66,8 @@ const register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const [result] = await pool.query(
-            'INSERT INTO usuarios (nombre, apellido, correo, contrasena, rol) VALUES (?, ?, ?, ?, ?)',
-            [name, lastname, email, hashedPassword, 'jugador']
+            'INSERT INTO usuarios (nombre, apellido, telefono, correo, contrasena, rol) VALUES (?, ?, ?, ?, ?, ?)',
+            [name, lastname, phone, email, hashedPassword, 'jugador']
         );
 
         res.status(201).json({ message: 'Usuario registrado exitosamente' });

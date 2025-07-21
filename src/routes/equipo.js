@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { crearEquipo, obtenerEquipos, obtenerEquipoPorId, actualizarEquipo, solicitudUnirseEquipo, listarSolicitudesPorEquipo, aceptarSolicitud, agregarJugadorAEquipo, obtenerJugadoresPorEquipo, rechazarSolicitud} = require('../controllers/equipoController');
+const { crearEquipo, obtenerEquipos, obtenerEquipoPorId, actualizarEquipo, solicitudUnirseEquipo, listarSolicitudesPorEquipo, aceptarSolicitud, agregarJugadorAEquipo, obtenerJugadoresPorEquipo, rechazarSolicitud, retarPartido, obtenerEquipoCapitan, eliminarJugadorEquipo} = require('../controllers/equipoController');
 
 router.post('/', crearEquipo);
 router.get('/', obtenerEquipos);
@@ -12,5 +12,8 @@ router.put('/solicitud/aceptar/:id_solicitud', aceptarSolicitud);
 router.post('/jugador', agregarJugadorAEquipo);
 router.get('/jugador/:id_equipo', obtenerJugadoresPorEquipo);
 router.put('/solicitud/rechazar/:id_solicitud', rechazarSolicitud);
+router.post('/retar', retarPartido);
+router.get('/capitan/:id_usuario', obtenerEquipoCapitan);
+router.delete('/jugador/:id_equipo/:id_usuario', eliminarJugadorEquipo);
 
 module.exports = router;
