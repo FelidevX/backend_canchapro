@@ -91,7 +91,6 @@ const solicitudUnirseEquipo = async (req, res) => {
         return res.status(400).json({ message: 'Faltan campos requeridos' });
     }
     try {
-        // Convertir fecha_solicitud a formato MySQL
         const fechaMysql = new Date(fecha_solicitud).toISOString().slice(0, 19).replace('T', ' ');
         const [result] = await pool.query(
             'INSERT INTO solicitudes_equipo (id_equipo, id_usuario, fecha_solicitud, estado) VALUES (?, ?, ?, ?)', 
