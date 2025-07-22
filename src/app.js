@@ -9,7 +9,7 @@ const equipoRoutes = require('./routes/equipo');
 const app = express();
 
 app.use(cors({
-    origin: ['http://localhost:4200', 'https://canchapro.onrender.com'],
+    origin: [process.env.FRONTEND_URL],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -23,4 +23,4 @@ app.use('/canchas', canchaRoutes);
 app.use('/reservas', reservaRoutes);
 app.use('/equipos', equipoRoutes);
 
-module.exports = app; 
+module.exports = app;
