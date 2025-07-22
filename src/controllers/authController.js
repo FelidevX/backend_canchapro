@@ -95,7 +95,7 @@ const register = async (req, res) => {
 const googleAuth = (req, res) => {
     const url = oAuth2Client.generateAuthUrl({
         scope: ['profile', 'email'],
-        redirect_uri: 'http://localhost:3000/auth/google/callback',
+        redirect_uri: 'https://backend-canchapro.onrender.com/auth/google/callback',
     });
     res.redirect(url);
 };
@@ -148,7 +148,7 @@ const googleCallback = async (req, res) => {
         );
 
         // Redirigir a la página principal con los datos necesarios
-        res.redirect(`http://localhost:4200/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
+        res.redirect(`https://canchapro.onrender.com/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
             id: userId,
             email: userInfo.email,
             name: userInfo.name,
