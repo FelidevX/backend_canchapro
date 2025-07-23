@@ -148,7 +148,7 @@ const googleCallback = async (req, res) => {
         );
 
         // Redirigir a la página principal con los datos necesarios
-        res.redirect(process.env.FRONTEND_URL + `/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
+        res.redirect(process.env.BACKEND_URL + `/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
             id: userId,
             email: userInfo.email,
             name: userInfo.name,
