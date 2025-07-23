@@ -156,7 +156,7 @@ const googleCallback = async (req, res) => {
         }))}`);
     } catch (error) {
         console.error('Error en autenticación:', error);
-        res.status(500).send('Error en autenticación');
+        res.status(500).send('Error en autenticación: ' + (error.message || error.toString()));
     }
 };
 
@@ -168,4 +168,4 @@ module.exports = {
     register,
     googleAuth,
     googleCallback
-}; 
+};
