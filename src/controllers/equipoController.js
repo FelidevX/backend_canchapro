@@ -295,6 +295,135 @@ const eliminarJugadorEquipo = async (req, res) => {
     }
 }
 
+const obtenerRankingEquipos = async (req, res) => {
+    try {
+        const [rankings] = await pool.query(`
+            SELECT 
+                r.id_equipo,
+                e.nombre AS nombre_equipo,
+                r.partidos_jugados,
+                r.partidos_ganados,
+                r.partidos_perdidos,
+                r.goles_favor,
+                r.goles_contra
+            FROM rankings r
+            JOIN equipos e ON r.id_equipo = e.id
+        `);
+
+        res.json(rankings);
+    } catch (error) {
+        console.error('Error al obtener ranking de equipos:', error);
+        res.status(500).json({ message: 'Error al obtener ranking de equipos' });
+    }
+};
+
+const notificarResultado = async (req, res) => {
+  try {
+    const { equipoId, rivalId, golesFavor, golesContra } = req.body;
+    await pool.query(
+      `INSERT INTO partidos (fecha, goles_a, goles_b, id_equipo_a, id_equipo_b, estado)
+       VALUES (NOW(), ?, ?, ?, ?, 'pendiente')`,
+      [golesFavor, golesContra, equipoId, rivalId]
+    );
+    res.json({ message: 'Resultado notificado, pendiente de aprobación.' });
+  } catch (error) {
+    console.error('Error al notificar resultado:', error);
+    res.status(500).json({ message: 'Error al notificar resultado.' });
+  }
+};
+
+const listarPendientes = async (req, res) => {
+  try {
+    const [pendientes] = await pool.query(`
+      SELECT p.*, 
+             ea.nombre AS equipo_a_nombre, 
+             eb.nombre AS equipo_b_nombre
+      FROM partidos p
+      JOIN equipos ea ON p.id_equipo_a = ea.id
+      JOIN equipos eb ON p.id_equipo_b = eb.id
+      WHERE p.estado = 'pendiente'
+    `);
+    res.json(pendientes);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener partidos pendientes.' });
+  }
+};
+
+const aprobarResultado = async (req, res) => {
+  const { id } = req.params;
+  const conn = await pool.getConnection();
+  try {
+    const [[partido]] = await conn.query(
+      `SELECT id_equipo_a, id_equipo_b, goles_a, goles_b FROM partidos WHERE id = ?`,
+      [id]
+    );
+    if (!partido) return res.status(404).json({ message: 'Partido no encontrado' });
+
+    await conn.query(`UPDATE partidos SET estado = 'aprobado' WHERE id = ?`, [id]);
+
+    await actualizarRankingEquipo(conn, partido.id_equipo_a, partido.goles_a, partido.goles_b, partido.goles_a > partido.goles_b);
+
+    await actualizarRankingEquipo(conn, partido.id_equipo_b, partido.goles_b, partido.goles_a, partido.goles_b > partido.goles_a);
+
+    res.json({ message: 'Resultado aprobado y ranking actualizado.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al aprobar resultado.' });
+  } finally {
+    conn.release();
+  }
+};
+
+async function actualizarRankingEquipo(conn, id_equipo, goles_favor, goles_contra, gano) {
+  const [[ranking]] = await conn.query(
+    `SELECT * FROM rankings WHERE id_equipo = ?`,
+    [id_equipo]
+  );
+  if (!ranking) {
+    await conn.query(
+      `INSERT INTO rankings (id_equipo, partidos_jugados, partidos_ganados, partidos_perdidos, goles_favor, goles_contra)
+       VALUES (?, 1, ?, ?, ?, ?)`,
+      [
+        id_equipo,
+        gano ? 1 : 0,
+        !gano ? 1 : 0,
+        goles_favor,
+        goles_contra
+      ]
+    );
+  } else {
+    await conn.query(
+      `UPDATE rankings
+       SET partidos_jugados = partidos_jugados + 1,
+           partidos_ganados = partidos_ganados + ?,
+           partidos_perdidos = partidos_perdidos + ?,
+           goles_favor = goles_favor + ?,
+           goles_contra = goles_contra + ?
+       WHERE id_equipo = ?`,
+      [
+        gano ? 1 : 0,
+        !gano ? 1 : 0,
+        goles_favor,
+        goles_contra,
+        id_equipo
+      ]
+    );
+  }
+}
+
+const rechazarResultado = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query(
+      `UPDATE partidos SET estado = 'rechazado' WHERE id = ?`,
+      [id]
+    );
+    res.json({ message: 'Resultado rechazado.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al rechazar resultado.' });
+  }
+};
+
 module.exports = {
     crearEquipo,
     obtenerEquipos,
@@ -308,5 +437,10 @@ module.exports = {
     rechazarSolicitud,
     retarPartido,
     obtenerEquipoCapitan,
-    eliminarJugadorEquipo
+    eliminarJugadorEquipo,
+    obtenerRankingEquipos,
+    notificarResultado,
+    listarPendientes,
+    aprobarResultado,
+    rechazarResultado
 }

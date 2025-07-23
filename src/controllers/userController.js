@@ -77,9 +77,48 @@ const actualizarUsuario = async (req, res) => {
     }
 }
 
+const actualizarRolUsuario = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+        if (!role) {
+            return res.status(400).json({ message: 'El rol es requerido' });
+        }
+        const [result] = await pool.query(
+            'UPDATE usuarios SET rol = ? WHERE id = ?',
+            [role, id]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        res.json({ message: 'Rol actualizado exitosamente' });
+    } catch (error) {
+        console.error('Error al actualizar rol:', error);
+        res.status(500).json({ message: 'Error al actualizar rol' });
+    }
+};
+
+const obtenerUsuarios = async (req, res) => {
+    try {
+        const [users] = await pool.query('SELECT id, nombre, apellido, correo, rol FROM usuarios');
+        res.json(users.map(user => ({
+            id: user.id,
+            name: user.nombre,
+            lastName: user.apellido,
+            email: user.correo,
+            role: user.rol
+        })));
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        res.status(500).json({ message: 'Error al obtener usuarios' });
+    }
+}
+
 module.exports = {
     getUserInfo,
     logout,
     getUser,
-    actualizarUsuario
+    actualizarUsuario,
+    actualizarRolUsuario,
+    obtenerUsuarios
 };

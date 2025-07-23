@@ -14,9 +14,9 @@ async function crearPreferenciaReserva(reserva) {
       }
     ],
     back_urls: {
-      success: 'https://4a309eb99564.ngrok-free.app/pago-exitoso',
-      failure: 'https://4a309eb99564.ngrok-free.app/pago-fallido',
-      pending: 'https://4a309eb99564.ngrok-free.app/pago-pendiente'
+      success: 'https://canchapro.onrender.com/pago-exitoso',
+      failure: 'https://canchapro.onrender.com/pago-fallido',
+      pending: 'https://canchapro.onrender.com/pago-pendiente'
     },
     auto_return: 'approved'
   };
