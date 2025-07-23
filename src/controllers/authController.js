@@ -127,8 +127,11 @@ const googleCallback = async (req, res) => {
         let userId;
         let userRole;
         if(existingUser.length === 0){
-            const [result] = await pool.query('INSERT INTO usuarios (nombre, apellido, correo, rol) VALUES (?, ?, ?, ?)',
-            [userInfo.name, userInfo.surname, userInfo.email, 'jugador']);
+            const fakePassword = require('crypto').randomBytes(32).toString('hex');
+            const [result] = await pool.query(
+                'INSERT INTO usuarios (nombre, apellido, correo, contrasena, rol) VALUES (?, ?, ?, ?, ?)',
+                [userInfo.name, userInfo.surname, userInfo.email, fakePassword, 'jugador']
+            );
             userId = result.insertId;
             userRole = 'jugador';
         } else {
